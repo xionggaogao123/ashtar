@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SpiderUserInfo">
+    <resultMap id="SpiderUserInfoMap" type="SpiderUserInfo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="telPhone" column="tel_phone"/>
+        <result property="address" column="address"/>
+        <result property="companyName" column="company_name"/>
+        <result property="mainProduct" column="main_product"/>
+        <result property="channel" column="channel"/>
+        <result property="keyword" column="keyword"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="table_name">
+        spider_user_info
+    </sql>
+
+    <sql id="columns_all">
+        id,
+        <include refid="columns_exclude_id"/>
+    </sql>
+
+    <sql id="columns_exclude_id">
+        `name`, `tel_phone`, `address`, `company_name`, `main_product`, `channel`, `keyword`, `create_time`,
+        `update_time`
+    </sql>
+
+    <sql id="values_exclude_id">
+        #{name}, #{telPhone}, #{address}, #{companyName}, #{mainProduct}, #{channel}, #{keyword}, now(), now()
+    </sql>
+
+    <sql id="criteria">
+        <where>
+            <if test="name != null">AND `name` = #{name}</if>
+            <if test="telPhone != null">AND `tel_phone` = #{telPhone}</if>
+            <if test="address != null">AND `address` = #{address}</if>
+            <if test="companyName != null">AND `company_name` = #{companyName}</if>
+            <if test="mainProduct != null">AND `main_product` = #{mainProduct}</if>
+            <if test="channel != null">AND `channel` = #{channel}</if>
+            <if test="keyword != null">AND `keyword` = #{keyword}</if>
+            <if test="createTime != null">AND <![CDATA[create_time >= #{createTime}]]> </if>
+            <if test="updateTime != null">AND <![CDATA[update_time < #{updateTime}]]> </if>
+        </where>
+    </sql>
+
+    <insert id="create" parameterType="SpiderUserInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+        <include refid="table_name"/>
+        (<include refid="columns_exclude_id"/>)
+        VALUES
+        (<include refid="values_exclude_id"/>)
+    </insert>
+
+    <insert id="batchInsert" parameterType="SpiderUserInfo" useGeneratedKeys="true">
+        INSERT INTO
+        <include refid="table_name"/>
+        (<include refid="columns_exclude_id"/>)
+        VALUES
+        <foreach collection="list" item="i" index="index" separator=",">
+            (#{i.name}, #{i.telPhone}, #{i.address}, #{i.companyName}, #{i.mainProduct}, #{i.channel}, #{i.keyword},
+           now(), now())
+        </foreach>
+    </insert>
+
+    <select id="selectById" parameterType="long" resultMap="SpiderUserInfoMap">
+        SELECT
+        <include refid="columns_all"/>
+        FROM
+        <include refid="table_name"/>
+        WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectByIds" parameterType="list" resultMap="SpiderUserInfoMap">
+        SELECT
+        <include refid="columns_all"/>
+        FROM
+        <include refid="table_name"/>
+        WHERE id IN
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <update id="update" parameterType="SpiderUserInfo">
+        UPDATE
+        <include refid="table_name"/>
+        <set>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="telPhone != null">`tel_phone` = #{telPhone},</if>
+            <if test="address != null">`address` = #{address},</if>
+            <if test="companyName != null">`company_name` = #{companyName},</if>
+            <if test="mainProduct != null">`main_product` = #{mainProduct},</if>
+            <if test="channel != null">`channel` = #{channel},</if>
+            <if test="keyword != null">`keyword` = #{keyword},</if>
+            update_time = now()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM
+        <include refid="table_name"/>
+        WHERE id = #{id}
+    </delete>
+
+    <select id="count" parameterType="map" resultType="long">
+        SELECT COUNT(1)
+        FROM
+        <include refid="table_name"/>
+        <include refid="criteria"/>
+    </select>
+
+    <select id="selectPaging" parameterType="map" resultMap="SpiderUserInfoMap">
+        SELECT
+        <include refid="columns_all"/>
+        FROM
+        <include refid="table_name"/>
+        <include refid="criteria"/>
+        ORDER BY `id` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="SpiderUserInfoMap">
+        SELECT
+        <include refid="columns_all"/>
+        FROM
+        <include refid="table_name"/>
+        <include refid="criteria"/>
+        ORDER BY `id` DESC
+    </select>
+
+</mapper>
